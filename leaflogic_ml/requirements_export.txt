@@ -1,0 +1,4 @@
+# Separate venv recommended (large download; may pin protobuf vs torch env).
+onnx>=1.16.0
+onnx2tf>=2.4.0
+tensorflow-cpu>=2.15.0,<2.21.0

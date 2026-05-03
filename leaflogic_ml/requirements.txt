@@ -1,0 +1,21 @@
+# CPU (default from PyPI): pip install -r requirements.txt
+#
+# GPU (NVIDIA driver required; no separate CUDA toolkit needed for pip wheels):
+#   pip uninstall -y torch torchvision torchaudio
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+# If that fails (older driver), try cu126: https://pytorch.org/get-started/locally/
+# Then: python -c "import torch; print(torch.cuda.is_available())"  → True
+# Train: python -m leaflogic_ml.train ...   (auto-picks cuda) or add --device cuda
+#
+# AMD GPU (Windows): PyTorch’s CUDA wheels are NVIDIA-only. Practical options:
+#   - Easiest: train on CPU (this repo; slower but works).
+#   - Windows GPU: Microsoft’s torch-directml (separate venv; older bundled PyTorch;
+#     see https://learn.microsoft.com/en-us/windows/ai/directml/pytorch-windows ).
+#     Our train script uses torch.device("cuda"|"cpu") only — DirectML needs extra
+#     integration (torch_directml.device()), not done here.
+#   - Linux: ROCm builds from https://pytorch.org/get-started/locally/ if you use Linux.
+
+torch>=2.1.0
+torchvision>=0.16.0
+Pillow>=10.0.0
+numpy>=1.24.0
