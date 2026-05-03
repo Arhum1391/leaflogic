@@ -56,6 +56,9 @@ class _TrackerScreenState extends State<TrackerScreen> {
     return Scaffold(
       appBar: AppBar(
         primary: false,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 44,
+        titleSpacing: 16,
         title: const Text('Tracker'),
         actions: [
           IconButton(
@@ -158,23 +161,20 @@ class _TrackerCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
-            width: 88,
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: Image.network(
-                row.signedUrl,
-                fit: BoxFit.cover,
-                loadingBuilder: (_, child, p) {
-                  if (p == null) return child;
-                  return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-                },
-                errorBuilder: (context, err, st) => ColoredBox(
-                  color: cs.surfaceContainerHighest,
-                  child: Icon(Icons.broken_image_outlined, color: cs.outline, size: 28),
-                ),
+            width: 84,
+            height: 84,
+            child: Image.network(
+              row.signedUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (_, child, p) {
+                if (p == null) return child;
+                return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+              },
+              errorBuilder: (context, err, st) => ColoredBox(
+                color: cs.surfaceContainerHighest,
+                child: Icon(Icons.broken_image_outlined, color: cs.outline, size: 28),
               ),
             ),
           ),

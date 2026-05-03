@@ -84,6 +84,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         primary: false,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 44,
+        titleSpacing: 16,
         title: const Text('Dashboard'),
         actions: [
           IconButton(

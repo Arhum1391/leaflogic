@@ -61,6 +61,9 @@ class _SamplesScreenState extends State<SamplesScreen> {
     return Scaffold(
       appBar: AppBar(
         primary: false,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 44,
+        titleSpacing: 16,
         title: const Text('Samples'),
       ),
       body: ListView.separated(
