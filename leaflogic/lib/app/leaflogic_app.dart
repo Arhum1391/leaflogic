@@ -35,11 +35,23 @@ class _LeafLogicAppState extends State<LeafLogicApp> {
         colorScheme: baseScheme,
         scaffoldBackgroundColor: const Color(0xFFF2F7F0),
         appBarTheme: AppBarTheme(
+          // Tight 32dp page-name strip under the persistent brand header.
+          // The strip's actions still have to be made compact at the call
+          // site (IconButton padding/constraints), otherwise each 48x48
+          // IconButton silently pushes this height back up.
+          toolbarHeight: 32,
           centerTitle: true,
           elevation: 0,
           scrolledUnderElevation: 0.5,
           backgroundColor: baseScheme.surface,
           foregroundColor: baseScheme.onSurface,
+          titleTextStyle: TextStyle(
+            color: baseScheme.onSurface,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+          iconTheme: IconThemeData(color: baseScheme.onSurface, size: 20),
+          actionsIconTheme: IconThemeData(color: baseScheme.onSurface, size: 20),
         ),
         cardTheme: CardThemeData(
           elevation: 0,

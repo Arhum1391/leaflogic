@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../services/leaf_classifier_service.dart';
 import '../../services/leaflogic_data_service.dart';
+import '../../ui/compact_icon_button.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -143,18 +144,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
-        toolbarHeight: 32,
         titleSpacing: 16,
-        titleTextStyle: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
         title: const Text('Scan library'),
         actions: [
-          IconButton(
+          CompactIconButton(
             tooltip: 'Refresh',
             onPressed: _loading ? null : _load,
-            icon: const Icon(Icons.refresh),
+            icon: Icons.refresh,
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(

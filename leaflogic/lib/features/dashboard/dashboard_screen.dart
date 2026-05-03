@@ -7,6 +7,7 @@ import '../../core/config/diagnosis_preview.dart';
 import '../../services/last_leaf_diagnosis.dart';
 import '../../services/leaf_diagnosis_notifier.dart';
 import '../../services/leaflogic_data_service.dart';
+import '../../ui/compact_icon_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -94,23 +95,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
-        toolbarHeight: 32,
         titleSpacing: 16,
-        titleTextStyle: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
         title: const Text('Dashboard'),
         actions: [
-          IconButton(
+          CompactIconButton(
             tooltip: 'Refresh',
             onPressed: _loading ? null : _load,
-            icon: const Icon(Icons.refresh),
+            icon: Icons.refresh,
           ),
-          IconButton(
+          CompactIconButton(
             tooltip: 'Sign out',
             onPressed: _signOut,
-            icon: const Icon(Icons.logout),
+            icon: Icons.logout,
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(

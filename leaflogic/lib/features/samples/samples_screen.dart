@@ -62,11 +62,7 @@ class _SamplesScreenState extends State<SamplesScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
-        toolbarHeight: 32,
         titleSpacing: 16,
-        titleTextStyle: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
         title: const Text('Samples'),
       ),
       body: ListView.separated(

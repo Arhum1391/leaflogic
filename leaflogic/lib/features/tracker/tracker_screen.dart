@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../services/leaflogic_data_service.dart';
+import '../../ui/compact_icon_button.dart';
 
 class TrackerScreen extends StatefulWidget {
   const TrackerScreen({super.key});
@@ -57,18 +58,15 @@ class _TrackerScreenState extends State<TrackerScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
-        toolbarHeight: 32,
         titleSpacing: 16,
-        titleTextStyle: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
         title: const Text('Tracker'),
         actions: [
-          IconButton(
+          CompactIconButton(
             tooltip: 'Refresh',
             onPressed: _loading ? null : _load,
-            icon: const Icon(Icons.refresh),
+            icon: Icons.refresh,
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(
