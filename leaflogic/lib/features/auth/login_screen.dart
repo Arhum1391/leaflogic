@@ -104,6 +104,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final google = GoogleSignIn(serverClientId: _kGoogleWebClientId);
+      // Clear any cached session first so signIn() always shows the account
+      // picker. Without this, after a sign-out the SDK silently reuses the
+      // previous account instead of letting the user choose.
+      await google.signOut();
       final account = await google.signIn();
       if (account == null) {
         return;

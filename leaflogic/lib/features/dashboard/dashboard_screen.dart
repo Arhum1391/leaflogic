@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/diagnosis_preview.dart';
@@ -72,6 +73,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _signOut() async {
     LastLeafDiagnosis.instance.clear();
     bumpLeafDiagnosis();
+    // Clear the Google account cache too, so the next "Continue with Google"
+    // tap re-shows the account picker instead of silently re-using the last
+    // signed-in account. Safe even if the user logged in with email/password.
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {
+      // Sign-in plugin not configured / no Google session - ignore.
+    }
     await Supabase.instance.client.auth.signOut();
     if (mounted) context.go('/login');
   }
