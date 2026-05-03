@@ -39,7 +39,7 @@ class _LeafLogicAppState extends State<LeafLogicApp> {
           // The strip's actions still have to be made compact at the call
           // site (IconButton padding/constraints), otherwise each 48x48
           // IconButton silently pushes this height back up.
-          toolbarHeight: 32,
+          toolbarHeight: 24,
           centerTitle: true,
           elevation: 0,
           scrolledUnderElevation: 0.5,

@@ -95,7 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
-        toolbarHeight: 32,
+        toolbarHeight: 24,
         titleSpacing: 16,
         title: const Text('Dashboard'),
         actions: [
