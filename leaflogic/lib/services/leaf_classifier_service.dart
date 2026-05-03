@@ -61,8 +61,8 @@ class LeafClassifierService {
 
     final resized = img.copyResize(
       decoded,
-      width: 256,
-      height: 256,
+      width: 224,
+      height: 224,
       interpolation: img.Interpolation.cubic,
     );
 

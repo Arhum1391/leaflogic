@@ -1,2 +1,1 @@
-# Generated locally after export (often large); use `git add -f` if you want it in git.
-assets/ml/leaf_classifier.tflite
+# (intentionally empty — .tflite model is committed so the app works after clone)
