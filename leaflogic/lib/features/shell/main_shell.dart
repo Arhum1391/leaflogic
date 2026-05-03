@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../services/tab_refresh.dart';
+
 class MainShell extends StatelessWidget {
   const MainShell({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
   static const _scanIndex = 2;
+
+  void _goAndRefresh(int index) {
+    navigationShell.goBranch(index);
+    requestTabRefresh(index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,12 +22,12 @@ class MainShell extends StatelessWidget {
       body: navigationShell,
       floatingActionButton: _ScanFab(
         active: navigationShell.currentIndex == _scanIndex,
-        onTap: () => navigationShell.goBranch(_scanIndex),
+        onTap: () => _goAndRefresh(_scanIndex),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _BottomBar(
         currentIndex: navigationShell.currentIndex,
-        onSelect: navigationShell.goBranch,
+        onSelect: _goAndRefresh,
         accent: cs.primary,
       ),
     );

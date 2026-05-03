@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../services/leaf_classifier_service.dart';
 import '../../services/leaflogic_data_service.dart';
+import '../../services/tab_refresh.dart';
 import '../../ui/leaflogic_logo.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -23,6 +24,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
   void initState() {
     super.initState();
     _load();
+    libraryRefreshSignal.addListener(_onTabRefocused);
+  }
+
+  @override
+  void dispose() {
+    libraryRefreshSignal.removeListener(_onTabRefocused);
+    super.dispose();
+  }
+
+  void _onTabRefocused() {
+    if (mounted) _load();
   }
 
   Future<void> _confirmAndDelete(UserLeafRow row) async {

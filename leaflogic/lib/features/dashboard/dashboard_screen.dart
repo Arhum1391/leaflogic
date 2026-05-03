@@ -10,6 +10,7 @@ import '../../core/config/diagnosis_preview.dart';
 import '../../services/last_leaf_diagnosis.dart';
 import '../../services/leaf_diagnosis_notifier.dart';
 import '../../services/leaflogic_data_service.dart';
+import '../../services/tab_refresh.dart';
 import '../../ui/leaflogic_logo.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -31,16 +32,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _load();
     leafDiagnosisRefresh.addListener(_onDiagnosisBumped);
+    dashboardRefreshSignal.addListener(_onTabRefocused);
   }
 
   @override
   void dispose() {
     leafDiagnosisRefresh.removeListener(_onDiagnosisBumped);
+    dashboardRefreshSignal.removeListener(_onTabRefocused);
     super.dispose();
   }
 
   void _onDiagnosisBumped() {
     // A new scan was just classified elsewhere - refresh the thumbnail.
+    if (mounted) _load();
+  }
+
+  void _onTabRefocused() {
     if (mounted) _load();
   }
 

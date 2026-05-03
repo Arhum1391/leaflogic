@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../services/leaflogic_data_service.dart';
+import '../../services/tab_refresh.dart';
 import '../../ui/leaflogic_logo.dart';
 
 class TrackerScreen extends StatefulWidget {
@@ -21,6 +22,17 @@ class _TrackerScreenState extends State<TrackerScreen> {
   void initState() {
     super.initState();
     _load();
+    trackerRefreshSignal.addListener(_onTabRefocused);
+  }
+
+  @override
+  void dispose() {
+    trackerRefreshSignal.removeListener(_onTabRefocused);
+    super.dispose();
+  }
+
+  void _onTabRefocused() {
+    if (mounted) _load();
   }
 
   Future<void> _load() async {
