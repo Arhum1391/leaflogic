@@ -54,6 +54,9 @@ kaggle.json
 **/hs_err_pid*.log
 **/replay_pid*.log
 
+# Kotlin compiler cache (generated, regenerated on build)
+**/android/.kotlin/
+
 # ===== iOS / macOS (if you ever build for these) =====
 **/ios/Pods/
 **/ios/.symlinks/
