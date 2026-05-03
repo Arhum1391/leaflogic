@@ -62,8 +62,11 @@ class _SamplesScreenState extends State<SamplesScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
-        toolbarHeight: 38,
+        toolbarHeight: 32,
         titleSpacing: 16,
+        titleTextStyle: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
         title: const Text('Samples'),
       ),
       body: ListView.separated(
@@ -115,59 +118,62 @@ class _SampleCard extends StatelessWidget {
     final cs = theme.colorScheme;
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Row(
         children: [
-          AspectRatio(
-            aspectRatio: 4 / 3,
+          SizedBox(
+            width: 96,
+            height: 96,
             child: Image.asset(sample.assetPath, fit: BoxFit.cover),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Expected: ${sample.expected}',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    sample.expected,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const SizedBox(height: 10),
-                if (result != null) ...[
-                  _PredictionRow(
-                    label: result!.label,
-                    confidence: result!.confidence,
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: busy ? null : onClassify,
-                        icon: busy
-                            ? const SizedBox(
-                                height: 16,
-                                width: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.bolt_outlined),
-                        label: Text(result == null ? 'Classify' : 'Re-run'),
+                  if (result != null) ...[
+                    const SizedBox(height: 4),
+                    _PredictionRow(
+                      label: result!.label,
+                      confidence: result!.confidence,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _matchVerdict(sample.expected, result!.label),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
-                ),
-                if (result != null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    _matchVerdict(sample.expected, result!.label),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FilledButton.tonalIcon(
+                      onPressed: busy ? null : onClassify,
+                      icon: busy
+                          ? const SizedBox(
+                              height: 14,
+                              width: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.bolt_outlined, size: 18),
+                      label: Text(result == null ? 'Classify' : 'Re-run'),
+                      style: FilledButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                      ),
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
           ),
         ],
@@ -208,40 +214,30 @@ class _PredictionRow extends StatelessWidget {
     final parts = label.split('___');
     final crop = parts.isNotEmpty ? parts[0].replaceAll('_', ' ') : label;
     final disease = parts.length > 1 ? parts[1].replaceAll('_', ' ') : '';
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Predicted',
-            style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+    final pct = (confidence * 100).toStringAsFixed(0);
+    final color = confidence >= 0.9
+        ? Colors.green.shade700
+        : confidence >= 0.7
+            ? Colors.orange.shade700
+            : cs.error;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          disease.isEmpty ? crop : '$crop — $disease',
+          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '$pct% confidence',
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(height: 2),
-          Text(
-            disease.isEmpty ? crop : '$crop — $disease',
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: confidence,
-              minHeight: 8,
-              backgroundColor: cs.surface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${(confidence * 100).toStringAsFixed(1)}% confidence',
-            style: theme.textTheme.labelMedium?.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
