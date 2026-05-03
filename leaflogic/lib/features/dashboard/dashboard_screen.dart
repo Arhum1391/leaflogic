@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,6 +22,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, int>? _stats;
   UserLeafRow? _latestScan;
+  int? _modelClassCount;
   String? _error;
   var _loading = true;
 
@@ -50,11 +54,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final results = await Future.wait([
         svc.fetchDashboardStats(),
         svc.fetchLatestScan(),
+        _loadModelClassCount(),
       ]);
       if (mounted) {
         setState(() {
           _stats = results[0] as Map<String, int>;
           _latestScan = results[1] as UserLeafRow?;
+          _modelClassCount = results[2] as int?;
           _loading = false;
         });
       }
@@ -68,6 +74,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _loading = false;
         });
       }
+    }
+  }
+
+  Future<int?> _loadModelClassCount() async {
+    try {
+      final s = await rootBundle.loadString('assets/ml/labels.json');
+      final list = jsonDecode(s) as List<dynamic>;
+      return list.length;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -161,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _MetricTile(
                     icon: Icons.menu_book_outlined,
                     label: 'Catalog diseases',
-                    value: '${_stats!['catalog_diseases']}',
+                    value: '${_modelClassCount ?? _stats!['catalog_diseases']}',
                     tint: cs.secondary,
                     onTap: () => context.go('/dashboard/diseases'),
                   ),
