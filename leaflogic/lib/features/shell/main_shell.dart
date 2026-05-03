@@ -35,6 +35,11 @@ class MainShell extends StatelessWidget {
             label: 'Scan',
           ),
           NavigationDestination(
+            icon: Icon(Icons.timeline_outlined),
+            selectedIcon: Icon(Icons.timeline),
+            label: 'Tracker',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.science_outlined),
             selectedIcon: Icon(Icons.science),
             label: 'Samples',

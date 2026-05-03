@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -11,12 +12,21 @@ class UserLeafRow {
     required this.storagePath,
     required this.createdAt,
     required this.signedUrl,
+    this.predictedLabel,
+    this.predictedConfidence,
+    this.predictedAt,
   });
 
   final String id;
   final String storagePath;
   final DateTime createdAt;
   final String signedUrl;
+  final String? predictedLabel;
+  final double? predictedConfidence;
+  final DateTime? predictedAt;
+
+  bool get hasPrediction =>
+      predictedLabel != null && predictedLabel!.isNotEmpty && predictedConfidence != null;
 }
 
 /// Supabase reads / uploads for LeafLogic.
@@ -27,7 +37,7 @@ class LeafLogicDataService {
 
   static const _uuid = Uuid();
 
-  /// Global catalog + profile counts, plus current user's image count (RPC).
+  /// Global catalog count + current user's image count (RPC).
   Future<Map<String, int>> fetchDashboardStats() async {
     final raw = await _client.rpc('dashboard_stats');
     final m = Map<String, dynamic>.from(raw as Map);
@@ -58,7 +68,7 @@ class LeafLogicDataService {
 
     final rows = await _client
         .from('user_images')
-        .select('id, storage_path, created_at')
+        .select('id, storage_path, created_at, predicted_label, predicted_confidence, predicted_at')
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
@@ -75,6 +85,11 @@ class LeafLogicDataService {
           storagePath: path,
           createdAt: DateTime.parse(m['created_at'] as String),
           signedUrl: signed,
+          predictedLabel: m['predicted_label'] as String?,
+          predictedConfidence: (m['predicted_confidence'] as num?)?.toDouble(),
+          predictedAt: m['predicted_at'] != null
+              ? DateTime.parse(m['predicted_at'] as String)
+              : null,
         ),
       );
     }
@@ -82,10 +97,13 @@ class LeafLogicDataService {
   }
 
   /// Uploads bytes to `leaf-images/{uid}/{uuid}.ext` and inserts `user_images`.
+  /// Optionally records the on-device prediction at the same time.
   Future<void> uploadLeafImage({
     required Uint8List bytes,
     required String contentType,
     required String extension,
+    String? predictedLabel,
+    double? predictedConfidence,
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw StateError('Not signed in');
@@ -97,10 +115,44 @@ class LeafLogicDataService {
           fileOptions: FileOptions(contentType: contentType, upsert: true),
         );
 
-    await _client.from('user_images').insert({
+    final insertRow = <String, dynamic>{
       'user_id': user.id,
       'storage_path': objectPath,
-    });
+    };
+    if (predictedLabel != null && predictedConfidence != null) {
+      insertRow['predicted_label'] = predictedLabel;
+      insertRow['predicted_confidence'] = predictedConfidence;
+      insertRow['predicted_at'] = DateTime.now().toUtc().toIso8601String();
+    }
+
+    await _client.from('user_images').insert(insertRow);
+  }
+
+  /// Updates an existing user_images row with a fresh prediction. Used by the
+  /// Library's per-card "Classify" / "Re-classify" button.
+  Future<void> updatePrediction({
+    required String rowId,
+    required String label,
+    required double confidence,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw StateError('Not signed in');
+
+    await _client.from('user_images').update({
+      'predicted_label': label,
+      'predicted_confidence': confidence,
+      'predicted_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', rowId).eq('user_id', user.id);
+  }
+
+  /// Downloads the bytes of a previously-uploaded leaf image so the on-device
+  /// classifier can re-run on it.
+  Future<Uint8List> fetchLeafImageBytes(String signedUrl) async {
+    final res = await http.get(Uri.parse(signedUrl));
+    if (res.statusCode != 200) {
+      throw StateError('Image fetch failed (${res.statusCode}).');
+    }
+    return res.bodyBytes;
   }
 
   /// Removes the object from Storage, then the `user_images` row (RLS must allow both).

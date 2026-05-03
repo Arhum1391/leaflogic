@@ -118,39 +118,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               )
             else ...[
-              LayoutBuilder(
-                builder: (context, c) {
-                  final w = c.maxWidth;
-                  final cross = w > 520 ? 3 : 2;
-                  return GridView.count(
-                    crossAxisCount: cross,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.15,
-                    children: [
-                      _MetricTile(
-                        icon: Icons.photo_camera_outlined,
-                        label: 'My leaf images',
-                        value: '${_stats!['my_leaf_images']}',
-                        tint: cs.primary,
-                      ),
-                      _MetricTile(
-                        icon: Icons.menu_book_outlined,
-                        label: 'Catalog diseases',
-                        value: '${_stats!['catalog_diseases']}',
-                        tint: cs.secondary,
-                      ),
-                      _MetricTile(
-                        icon: Icons.people_outline,
-                        label: 'Registered profiles',
-                        value: '${_stats!['registered_profiles']}',
-                        tint: const Color(0xFF00695C),
-                      ),
-                    ],
-                  );
-                },
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.15,
+                children: [
+                  _MetricTile(
+                    icon: Icons.photo_camera_outlined,
+                    label: 'My leaf images',
+                    value: '${_stats!['my_leaf_images']}',
+                    tint: cs.primary,
+                  ),
+                  _MetricTile(
+                    icon: Icons.menu_book_outlined,
+                    label: 'Catalog diseases',
+                    value: '${_stats!['catalog_diseases']}',
+                    tint: cs.secondary,
+                  ),
+                ],
               ),
             ],
             const SizedBox(height: 28),
@@ -161,7 +149,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 8),
             ValueListenableBuilder<int>(
               valueListenable: leafDiagnosisRefresh,
-              builder: (context, _, __) {
+              builder: (context, _, _) {
                 if (DiagnosisPreview.enabled) {
                   return _LatestScanCard(
                     species: DiagnosisPreview.species,

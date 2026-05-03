@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../services/leaf_classifier_service.dart';
 import '../config/app_env.dart';
 
 class AppBootstrap {
@@ -20,6 +23,11 @@ class AppBootstrap {
         anonKey: AppEnv.supabaseAnonKey,
       );
     }
+    // Pre-warm the TFLite interpreter in the background so the first tap on
+    // Classify / Save scan doesn't pay the ~1s cold-load cost. We don't await
+    // this - if the model is missing the per-call ensureLoaded() still handles
+    // it, just less smoothly.
+    unawaited(LeafClassifierService.instance.ensureLoaded());
     _initialized = true;
   }
 }

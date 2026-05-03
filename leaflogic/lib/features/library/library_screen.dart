@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../services/leaf_classifier_service.dart';
 import '../../services/leaflogic_data_service.dart';
 import '../../ui/leaflogic_logo.dart';
 
@@ -15,6 +16,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   List<UserLeafRow>? _items;
   String? _error;
   var _loading = true;
+  final _classifying = <String>{};
 
   @override
   void initState() {
@@ -57,6 +59,53 @@ class _LibraryScreenState extends State<LibraryScreen> {
       if (mounted) {
         messenger.showSnackBar(SnackBar(content: Text('Could not delete: $e')));
       }
+    }
+  }
+
+  Future<void> _classifyRow(UserLeafRow row) async {
+    if (_classifying.contains(row.id)) return;
+    setState(() => _classifying.add(row.id));
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final svc = LeafLogicDataService(Supabase.instance.client);
+      final bytes = await svc.fetchLeafImageBytes(row.signedUrl);
+      final pred = await LeafClassifierService.instance.classifyBytes(bytes);
+      if (pred == null) {
+        if (mounted) {
+          messenger.showSnackBar(
+            const SnackBar(content: Text('Classifier not loaded.')),
+          );
+        }
+        return;
+      }
+      await svc.updatePrediction(
+        rowId: row.id,
+        label: pred.label,
+        confidence: pred.confidence,
+      );
+      if (!mounted) return;
+      // Patch the local row so the UI updates without a full reload.
+      setState(() {
+        final i = _items!.indexWhere((r) => r.id == row.id);
+        if (i != -1) {
+          final old = _items![i];
+          _items![i] = UserLeafRow(
+            id: old.id,
+            storagePath: old.storagePath,
+            createdAt: old.createdAt,
+            signedUrl: old.signedUrl,
+            predictedLabel: pred.label,
+            predictedConfidence: pred.confidence,
+            predictedAt: DateTime.now().toUtc(),
+          );
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(SnackBar(content: Text('Classify failed: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _classifying.remove(row.id));
     }
   }
 
@@ -162,67 +211,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 0.82,
-      ),
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
       itemCount: items.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
         final row = items[i];
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network(
-                      row.signedUrl,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (_, child, p) {
-                        if (p == null) return child;
-                        return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-                      },
-                      errorBuilder: (context, err, st) => ColoredBox(
-                        color: cs.surfaceContainerHighest,
-                        child: Icon(Icons.broken_image_outlined, color: cs.outline, size: 40),
-                      ),
-                    ),
-                    Positioned(
-                      top: 6,
-                      right: 6,
-                      child: Material(
-                        color: Colors.black45,
-                        shape: const CircleBorder(),
-                        clipBehavior: Clip.antiAlias,
-                        child: IconButton(
-                          tooltip: 'Delete scan',
-                          icon: const Icon(Icons.delete_outline, color: Colors.white, size: 22),
-                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                          padding: EdgeInsets.zero,
-                          onPressed: () => _confirmAndDelete(row),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
-                child: Text(
-                  _shortDate(row.createdAt),
-                  style: theme.textTheme.labelSmall,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
+        return _LibraryCard(
+          row: row,
+          busy: _classifying.contains(row.id),
+          onClassify: () => _classifyRow(row),
+          onDelete: () => _confirmAndDelete(row),
+          shortDate: _shortDate,
         );
       },
     );
@@ -232,5 +232,147 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final l = d.toLocal();
     return '${l.year}-${l.month.toString().padLeft(2, '0')}-${l.day.toString().padLeft(2, '0')} '
         '${l.hour.toString().padLeft(2, '0')}:${l.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+class _LibraryCard extends StatelessWidget {
+  const _LibraryCard({
+    required this.row,
+    required this.busy,
+    required this.onClassify,
+    required this.onDelete,
+    required this.shortDate,
+  });
+
+  final UserLeafRow row;
+  final bool busy;
+  final VoidCallback onClassify;
+  final VoidCallback onDelete;
+  final String Function(DateTime) shortDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 120,
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: Image.network(
+                row.signedUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (_, child, p) {
+                  if (p == null) return child;
+                  return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+                },
+                errorBuilder: (context, err, st) => ColoredBox(
+                  color: cs.surfaceContainerHighest,
+                  child: Icon(Icons.broken_image_outlined, color: cs.outline, size: 32),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          shortDate(row.createdAt),
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Delete scan',
+                        icon: const Icon(Icons.delete_outline, size: 20),
+                        onPressed: onDelete,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
+                  ),
+                  if (row.hasPrediction) ...[
+                    _PredictionChip(
+                      label: row.predictedLabel!,
+                      confidence: row.predictedConfidence!,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FilledButton.tonalIcon(
+                      onPressed: busy ? null : onClassify,
+                      icon: busy
+                          ? const SizedBox(
+                              height: 14,
+                              width: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.bolt_outlined, size: 18),
+                      label: Text(row.hasPrediction ? 'Re-classify' : 'Classify'),
+                      style: FilledButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PredictionChip extends StatelessWidget {
+  const _PredictionChip({required this.label, required this.confidence});
+
+  final String label;
+  final double confidence;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final parts = label.split('___');
+    final crop = parts.isNotEmpty ? parts[0].replaceAll('_', ' ') : label;
+    final disease = parts.length > 1 ? parts[1].replaceAll('_', ' ') : '';
+    final pct = (confidence * 100).toStringAsFixed(0);
+    final color = confidence >= 0.9
+        ? Colors.green.shade700
+        : confidence >= 0.7
+            ? Colors.orange.shade700
+            : cs.error;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          disease.isEmpty ? crop : '$crop — $disease',
+          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '$pct% confidence',
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
   }
 }

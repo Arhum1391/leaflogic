@@ -53,6 +53,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
         bytes: bytes,
         contentType: contentType,
         extension: ext,
+        predictedLabel: pred?.label,
+        predictedConfidence: pred?.confidence,
       );
 
       if (!mounted) return;
@@ -161,53 +163,55 @@ class _CaptureScreenState extends State<CaptureScreen> {
                 ),
                 const SizedBox(height: 20),
               ],
-              AspectRatio(
-                aspectRatio: 4 / 3,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-                  ),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.crop_free, size: 52, color: cs.primary),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Fill the frame with one leaf',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Good lighting and a steady shot improve later diagnosis.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
+              if (_preview == null) ...[
+                AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+                    ),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.crop_free, size: 52, color: cs.primary),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Fill the frame with one leaf',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.titleSmall,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 6),
+                            Text(
+                              'Good lighting and a steady shot improve later diagnosis.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: _busy ? null : () => _pick(ImageSource.camera),
-                icon: const Icon(Icons.photo_camera_outlined),
-                label: const Text('Take photo'),
-              ),
-              const SizedBox(height: 10),
-              OutlinedButton.icon(
-                onPressed: _busy ? null : () => _pick(ImageSource.gallery),
-                icon: const Icon(Icons.photo_library_outlined),
-                label: const Text('Choose from gallery'),
-              ),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  onPressed: _busy ? null : () => _pick(ImageSource.camera),
+                  icon: const Icon(Icons.photo_camera_outlined),
+                  label: const Text('Take photo'),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : () => _pick(ImageSource.gallery),
+                  icon: const Icon(Icons.photo_library_outlined),
+                  label: const Text('Choose from gallery'),
+                ),
+              ],
             ],
           ),
           if (_busy)

@@ -10,6 +10,7 @@ import '../features/library/library_screen.dart';
 import '../features/samples/samples_screen.dart';
 import '../features/setup/setup_screen.dart';
 import '../features/shell/main_shell.dart';
+import '../features/tracker/tracker_screen.dart';
 
 GoRouter createAppRouter(Listenable refreshListenable) {
   return GoRouter(
@@ -74,6 +75,16 @@ GoRouter createAppRouter(Listenable refreshListenable) {
                 path: '/capture',
                 pageBuilder: (context, state) => const NoTransitionPage(
                   child: CaptureScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/tracker',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: TrackerScreen(),
                 ),
               ),
             ],
