@@ -34,6 +34,11 @@ class MainShell extends StatelessWidget {
             selectedIcon: Icon(Icons.document_scanner),
             label: 'Scan',
           ),
+          NavigationDestination(
+            icon: Icon(Icons.science_outlined),
+            selectedIcon: Icon(Icons.science),
+            label: 'Samples',
+          ),
         ],
       ),
     );

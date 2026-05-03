@@ -7,6 +7,7 @@ import '../features/auth/login_screen.dart';
 import '../features/capture/capture_screen.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/library/library_screen.dart';
+import '../features/samples/samples_screen.dart';
 import '../features/setup/setup_screen.dart';
 import '../features/shell/main_shell.dart';
 
@@ -73,6 +74,16 @@ GoRouter createAppRouter(Listenable refreshListenable) {
                 path: '/capture',
                 pageBuilder: (context, state) => const NoTransitionPage(
                   child: CaptureScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/samples',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: SamplesScreen(),
                 ),
               ),
             ],

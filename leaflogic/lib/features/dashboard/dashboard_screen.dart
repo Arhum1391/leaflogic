@@ -191,9 +191,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         const SizedBox(width: 14),
                         Expanded(
                           child: Text(
-                            'Save a leaf photo on the Scan tab to run on-device '
-                            'classification (after you add assets/ml/leaf_classifier.tflite). '
-                            'Or use MOCK_DIAGNOSIS for a UI-only preview.',
+                            'No scans yet. Open Samples to try the on-device '
+                            'classifier on bundled dataset images, or use Scan '
+                            'to take/pick your own leaf photo.',
                             style: theme.textTheme.bodyMedium,
                           ),
                         ),

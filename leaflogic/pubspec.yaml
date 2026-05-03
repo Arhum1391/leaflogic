@@ -70,8 +70,10 @@ flutter:
 
   assets:
     - design/leaflogic.png
-    # Add leaf_classifier.tflite after: python -m leaflogic_ml.export_tflite ...
+    # leaf_classifier.tflite + labels.json (produced by python -m leaflogic_ml.export_tflite)
     - assets/ml/
+    # 5 dataset thumbnails for the in-app Samples tab
+    - assets/samples/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
