@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../services/leaf_classifier_service.dart';
 import '../../services/leaflogic_data_service.dart';
-import '../../ui/leaflogic_logo.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -141,14 +141,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const LeafLogicLogo(height: 28),
-            const SizedBox(width: 8),
-            const Text('Scan library'),
-          ],
-        ),
+        title: const Text('Scan library'),
         actions: [
           IconButton(
             tooltip: 'Refresh',
@@ -206,6 +199,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
             'Supabase Storage and appear here.',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: FilledButton.icon(
+              onPressed: () => context.go('/capture'),
+              icon: const Icon(Icons.document_scanner_outlined),
+              label: const Text('Take a scan'),
+            ),
           ),
         ],
       );

@@ -128,6 +128,42 @@ class LeafLogicDataService {
     await _client.from('user_images').insert(insertRow);
   }
 
+  /// Returns the user's most recent classified scan (if any), with a fresh
+  /// signed URL for previewing the image. Used by Dashboard's "Latest scan"
+  /// card so it can show a real thumbnail instead of just text.
+  Future<UserLeafRow?> fetchLatestScan({int signedUrlSeconds = 3600}) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    final rows = await _client
+        .from('user_images')
+        .select('id, storage_path, created_at, predicted_label, predicted_confidence, predicted_at')
+        .eq('user_id', user.id)
+        .not('predicted_label', 'is', null)
+        .order('predicted_at', ascending: false)
+        .limit(1);
+
+    final list = rows as List<dynamic>;
+    if (list.isEmpty) return null;
+
+    final m = Map<String, dynamic>.from(list.first as Map);
+    final path = m['storage_path'] as String;
+    final signed = await _client.storage
+        .from(AppConstants.storageBucketLeafImages)
+        .createSignedUrl(path, signedUrlSeconds);
+    return UserLeafRow(
+      id: m['id'] as String,
+      storagePath: path,
+      createdAt: DateTime.parse(m['created_at'] as String),
+      signedUrl: signed,
+      predictedLabel: m['predicted_label'] as String?,
+      predictedConfidence: (m['predicted_confidence'] as num?)?.toDouble(),
+      predictedAt: m['predicted_at'] != null
+          ? DateTime.parse(m['predicted_at'] as String)
+          : null,
+    );
+  }
+
   /// Updates an existing user_images row with a fresh prediction. Used by the
   /// Library's per-card "Classify" / "Re-classify" button.
   Future<void> updatePrediction({

@@ -6,7 +6,6 @@ import '../../core/config/diagnosis_preview.dart';
 import '../../services/last_leaf_diagnosis.dart';
 import '../../services/leaf_diagnosis_notifier.dart';
 import '../../services/leaflogic_data_service.dart';
-import '../../ui/leaflogic_logo.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -17,6 +16,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, int>? _stats;
+  UserLeafRow? _latestScan;
   String? _error;
   var _loading = true;
 
@@ -24,6 +24,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _load();
+    leafDiagnosisRefresh.addListener(_onDiagnosisBumped);
+  }
+
+  @override
+  void dispose() {
+    leafDiagnosisRefresh.removeListener(_onDiagnosisBumped);
+    super.dispose();
+  }
+
+  void _onDiagnosisBumped() {
+    // A new scan was just classified elsewhere - refresh the thumbnail.
+    if (mounted) _load();
   }
 
   Future<void> _load() async {
@@ -33,10 +45,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
     try {
       final svc = LeafLogicDataService(Supabase.instance.client);
-      final s = await svc.fetchDashboardStats();
+      final results = await Future.wait([
+        svc.fetchDashboardStats(),
+        svc.fetchLatestScan(),
+      ]);
       if (mounted) {
         setState(() {
-          _stats = s;
+          _stats = results[0] as Map<String, int>;
+          _latestScan = results[1] as UserLeafRow?;
           _loading = false;
         });
       }
@@ -67,14 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const LeafLogicLogo(height: 30),
-            const SizedBox(width: 10),
-            const Text('Dashboard'),
-          ],
-        ),
+        title: const Text('Dashboard'),
         actions: [
           IconButton(
             tooltip: 'Refresh',
@@ -159,6 +168,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'Preview layout only (MOCK_DIAGNOSIS). Remove mock defines for real TFLite output.',
                   );
                 }
+                // Prefer the persisted scan (has a thumbnail). Fall back to
+                // in-memory state for the brief window between classify and
+                // upload completing.
+                final scan = _latestScan;
+                if (scan != null && scan.hasPrediction) {
+                  final parts = scan.predictedLabel!.split('___');
+                  final species = parts.isNotEmpty ? parts[0].replaceAll('_', ' ') : '';
+                  final disease = parts.length > 1 ? parts[1].replaceAll('_', ' ') : scan.predictedLabel!;
+                  final when = scan.predictedAt ?? scan.createdAt;
+                  return _LatestScanCard(
+                    species: species,
+                    disease: disease,
+                    confidence: scan.predictedConfidence!,
+                    thumbnailUrl: scan.signedUrl,
+                    footnote:
+                        'From your last scan (${when.toLocal().year}-${when.toLocal().month.toString().padLeft(2, '0')}-${when.toLocal().day.toString().padLeft(2, '0')})',
+                  );
+                }
                 final d = LastLeafDiagnosis.instance;
                 if (d.hasResult && d.species != null && d.diseaseName != null && d.confidence != null) {
                   return _LatestScanCard(
@@ -204,12 +231,14 @@ class _LatestScanCard extends StatelessWidget {
     required this.disease,
     required this.confidence,
     required this.footnote,
+    this.thumbnailUrl,
   });
 
   final String species;
   final String disease;
   final double confidence;
   final String footnote;
+  final String? thumbnailUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -222,8 +251,39 @@ class _LatestScanCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.biotech_outlined, size: 40, color: cs.primary),
+                if (thumbnailUrl != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: SizedBox(
+                      width: 64,
+                      height: 64,
+                      child: Image.network(
+                        thumbnailUrl!,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (_, child, p) {
+                          if (p == null) return child;
+                          return Container(
+                            color: cs.surfaceContainerHighest,
+                            child: const Center(
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, err, st) => Container(
+                          color: cs.surfaceContainerHighest,
+                          child: Icon(Icons.broken_image_outlined, color: cs.outline),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Icon(Icons.biotech_outlined, size: 40, color: cs.primary),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(

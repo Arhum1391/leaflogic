@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../services/leaflogic_data_service.dart';
-import '../../ui/leaflogic_logo.dart';
 
 class TrackerScreen extends StatefulWidget {
   const TrackerScreen({super.key});
@@ -55,14 +55,7 @@ class _TrackerScreenState extends State<TrackerScreen> {
     final cs = theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            LeafLogicLogo(height: 28),
-            SizedBox(width: 8),
-            Text('Tracker'),
-          ],
-        ),
+        title: const Text('Tracker'),
         actions: [
           IconButton(
             tooltip: 'Refresh',
@@ -120,6 +113,14 @@ class _TrackerScreenState extends State<TrackerScreen> {
             'or open Library and tap Classify on existing images.',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: FilledButton.icon(
+              onPressed: () => context.go('/capture'),
+              icon: const Icon(Icons.document_scanner_outlined),
+              label: const Text('Take a scan'),
+            ),
           ),
         ],
       );

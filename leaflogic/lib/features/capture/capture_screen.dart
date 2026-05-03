@@ -9,7 +9,6 @@ import '../../services/leaf_classifier_service.dart';
 import '../../services/leaf_diagnosis_notifier.dart';
 import '../../services/last_leaf_diagnosis.dart';
 import '../../services/leaflogic_data_service.dart';
-import '../../ui/leaflogic_logo.dart';
 
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({super.key});
@@ -29,6 +28,31 @@ class _CaptureScreenState extends State<CaptureScreen> {
     setState(() => _preview = picked);
   }
 
+  Future<bool> _confirmLowConfidence(double confidence) async {
+    final pct = (confidence * 100).toStringAsFixed(0);
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Low confidence'),
+        content: Text(
+          "The model is only $pct% sure. Try better lighting and frame a "
+          "single leaf for a stronger reading. Save this scan anyway?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Retake'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Save anyway'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   Future<void> _uploadPreview() async {
     final file = _preview;
     if (file == null) return;
@@ -46,6 +70,15 @@ class _CaptureScreenState extends State<CaptureScreen> {
       if (pred != null) {
         LastLeafDiagnosis.instance.setFromRawLabel(pred.label, pred.confidence);
         bumpLeafDiagnosis();
+
+        if (pred.confidence < 0.5) {
+          // Pause the busy modal so the dialog isn't blocked.
+          setState(() => _busy = false);
+          final ok = await _confirmLowConfidence(pred.confidence);
+          if (!mounted) return;
+          if (!ok) return;
+          setState(() => _busy = true);
+        }
       }
 
       final svc = LeafLogicDataService(Supabase.instance.client);
@@ -94,14 +127,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const LeafLogicLogo(height: 28),
-            const SizedBox(width: 8),
-            const Text('Scan leaf'),
-          ],
-        ),
+        title: const Text('Scan leaf'),
       ),
       body: Stack(
         children: [

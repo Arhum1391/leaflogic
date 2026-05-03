@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../services/leaf_classifier_service.dart';
-import '../../ui/leaflogic_logo.dart';
 
 class _Sample {
   const _Sample({required this.assetPath, required this.expected});
@@ -61,14 +60,7 @@ class _SamplesScreenState extends State<SamplesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            LeafLogicLogo(height: 28),
-            SizedBox(width: 8),
-            Text('Samples'),
-          ],
-        ),
+        title: const Text('Samples'),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
