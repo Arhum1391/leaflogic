@@ -6,6 +6,7 @@ import '../core/config/app_env.dart';
 import '../features/auth/login_screen.dart';
 import '../features/capture/capture_screen.dart';
 import '../features/dashboard/dashboard_screen.dart';
+import '../features/diseases/diseases_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/samples/samples_screen.dart';
 import '../features/setup/setup_screen.dart';
@@ -56,6 +57,12 @@ GoRouter createAppRouter(Listenable refreshListenable) {
                 pageBuilder: (context, state) => const NoTransitionPage(
                   child: DashboardScreen(),
                 ),
+                routes: [
+                  GoRoute(
+                    path: 'diseases',
+                    builder: (context, state) => const DiseasesScreen(),
+                  ),
+                ],
               ),
             ],
           ),

@@ -161,6 +161,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     label: 'Catalog diseases',
                     value: '${_stats!['catalog_diseases']}',
                     tint: cs.secondary,
+                    onTap: () => context.go('/dashboard/diseases'),
                   ),
                 ],
               ),
@@ -361,41 +362,54 @@ class _MetricTile extends StatelessWidget {
     required this.label,
     required this.value,
     required this.tint,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
   final String value;
   final Color tint;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: tint, size: 26),
-            const Spacer(),
-            Text(
-              value,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: tint, size: 26),
+                  const Spacer(),
+                  if (onTap != null)
+                    Icon(Icons.chevron_right, size: 18, color: theme.colorScheme.onSurfaceVariant),
+                ],
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              const Spacer(),
+              Text(
+                value,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
