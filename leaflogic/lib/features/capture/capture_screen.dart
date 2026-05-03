@@ -9,6 +9,7 @@ import '../../services/leaf_classifier_service.dart';
 import '../../services/leaf_diagnosis_notifier.dart';
 import '../../services/last_leaf_diagnosis.dart';
 import '../../services/leaflogic_data_service.dart';
+import '../../ui/leaflogic_logo.dart';
 
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({super.key});
@@ -127,11 +128,14 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        primary: false,
-        automaticallyImplyLeading: false,
-        toolbarHeight: 24,
-        titleSpacing: 16,
-        title: const Text('Scan leaf'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const LeafLogicLogo(height: 28),
+            const SizedBox(width: 8),
+            const Text('Scan leaf'),
+          ],
+        ),
       ),
       body: Stack(
         children: [

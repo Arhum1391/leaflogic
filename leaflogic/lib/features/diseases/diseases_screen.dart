@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:go_router/go_router.dart';
 
-import '../../ui/compact_icon_button.dart';
+import '../../ui/leaflogic_logo.dart';
 
 class DiseasesScreen extends StatefulWidget {
   const DiseasesScreen({super.key});
@@ -64,14 +64,19 @@ class _DiseasesScreenState extends State<DiseasesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        primary: true,
-        toolbarHeight: 44,
-        leading: CompactIconButton(
-          icon: Icons.arrow_back,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
           tooltip: 'Back',
           onPressed: () => context.pop(),
         ),
-        title: const Text('Catalog diseases'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const LeafLogicLogo(height: 28),
+            const SizedBox(width: 8),
+            const Text('Catalog diseases'),
+          ],
+        ),
       ),
       body: _buildBody(theme, cs),
     );

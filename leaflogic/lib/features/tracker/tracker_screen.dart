@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../services/leaflogic_data_service.dart';
-import '../../ui/compact_icon_button.dart';
+import '../../ui/leaflogic_logo.dart';
 
 class TrackerScreen extends StatefulWidget {
   const TrackerScreen({super.key});
@@ -56,18 +56,20 @@ class _TrackerScreenState extends State<TrackerScreen> {
     final cs = theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
-        primary: false,
-        automaticallyImplyLeading: false,
-        toolbarHeight: 24,
-        titleSpacing: 16,
-        title: const Text('Tracker'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const LeafLogicLogo(height: 28),
+            const SizedBox(width: 8),
+            const Text('Tracker'),
+          ],
+        ),
         actions: [
-          CompactIconButton(
+          IconButton(
             tooltip: 'Refresh',
             onPressed: _loading ? null : _load,
-            icon: Icons.refresh,
+            icon: const Icon(Icons.refresh),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(

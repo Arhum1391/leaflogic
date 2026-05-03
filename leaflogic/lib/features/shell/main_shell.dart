@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../ui/leaflogic_logo.dart';
-
 class MainShell extends StatelessWidget {
   const MainShell({required this.navigationShell, super.key});
 
@@ -14,12 +12,7 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      body: Column(
-        children: [
-          _BrandHeader(),
-          Expanded(child: navigationShell),
-        ],
-      ),
+      body: navigationShell,
       floatingActionButton: _ScanFab(
         active: navigationShell.currentIndex == _scanIndex,
         onTap: () => navigationShell.goBranch(_scanIndex),
@@ -29,38 +22,6 @@ class MainShell extends StatelessWidget {
         currentIndex: navigationShell.currentIndex,
         onSelect: navigationShell.goBranch,
         accent: cs.primary,
-      ),
-    );
-  }
-}
-
-class _BrandHeader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-    return Material(
-      color: cs.primary,
-      elevation: 0,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-          child: Row(
-            children: [
-              const LeafLogicLogo(height: 30, pad: 6, onGreenHeader: true),
-              const SizedBox(width: 12),
-              Text(
-                'LeafLogic',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  color: cs.onPrimary,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
