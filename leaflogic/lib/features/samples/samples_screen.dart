@@ -62,7 +62,7 @@ class _SamplesScreenState extends State<SamplesScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
-        toolbarHeight: 44,
+        toolbarHeight: 38,
         titleSpacing: 16,
         title: const Text('Samples'),
       ),
