@@ -1,1 +1,3 @@
-# (intentionally empty — .tflite model is committed so the app works after clone)
+# Local dev secrets (Supabase keys, PUB_CACHE override). Copy dev.env.example
+# to dev.env and fill in real values - never commit dev.env.
+dev.env
