@@ -127,6 +127,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        primary: false,
         title: const Text('Scan leaf'),
       ),
       body: Stack(

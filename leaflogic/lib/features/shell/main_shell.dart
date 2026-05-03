@@ -14,7 +14,6 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      extendBody: true,
       body: Column(
         children: [
           _BrandHeader(),

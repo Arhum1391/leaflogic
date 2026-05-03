@@ -55,6 +55,7 @@ class _TrackerScreenState extends State<TrackerScreen> {
     final cs = theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
+        primary: false,
         title: const Text('Tracker'),
         actions: [
           IconButton(

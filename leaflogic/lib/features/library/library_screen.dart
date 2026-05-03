@@ -141,6 +141,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        primary: false,
         title: const Text('Scan library'),
         actions: [
           IconButton(

@@ -83,6 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        primary: false,
         title: const Text('Dashboard'),
         actions: [
           IconButton(
