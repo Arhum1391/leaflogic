@@ -144,6 +144,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
+        toolbarHeight: 32,
         titleSpacing: 16,
         title: const Text('Scan library'),
         actions: [

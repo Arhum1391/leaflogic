@@ -129,6 +129,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
+        toolbarHeight: 32,
         titleSpacing: 16,
         title: const Text('Scan leaf'),
       ),

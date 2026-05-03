@@ -58,6 +58,7 @@ class _TrackerScreenState extends State<TrackerScreen> {
       appBar: AppBar(
         primary: false,
         automaticallyImplyLeading: false,
+        toolbarHeight: 32,
         titleSpacing: 16,
         title: const Text('Tracker'),
         actions: [
