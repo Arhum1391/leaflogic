@@ -123,7 +123,7 @@ def main() -> None:
             dynamic_axes={"input": {0: "batch"}, "output": {0: "batch"}},
         )
 
-        print("Converting ONNX -> SavedModel (onnx2tf)...", flush=True)
+        print("Converting ONNX -> TFLite (onnx2tf)...", flush=True)
         r = subprocess.run(
             ["onnx2tf", "-i", str(onnx_path), "-o", str(sm_path)],
             check=False,
@@ -135,17 +135,15 @@ def main() -> None:
             )
         if r.returncode != 0:
             raise SystemExit(
-                "onnx2tf failed. In a venv with enough disk space:\n"
-                "  pip install onnx onnx2tf tensorflow-cpu\n"
-                "Then re-run this script (torch can stay in a different env for training)."
+                "onnx2tf failed. Install with:\n"
+                "  pip install onnx onnx2tf tensorflow-cpu ai-edge-litert\n"
+                "Then re-run this script."
             )
 
-        print("Converting SavedModel -> TFLite...", flush=True)
-        import tensorflow as tf
-
-        converter = tf.lite.TFLiteConverter.from_saved_model(str(sm_path))
-        converter.optimizations = [tf.lite.Optimize.DEFAULT]
-        tflite_buf = converter.convert()
+        # Newer onnx2tf versions emit .tflite files directly (model_float32.tflite,
+        # model_float16.tflite). Older versions only emit a SavedModel and we have to
+        # run the TFLiteConverter ourselves. Handle both.
+        tflite_buf = _read_or_convert_tflite(sm_path)
 
     tflite_out = out_dir / "leaf_classifier.tflite"
     tflite_out.write_bytes(tflite_buf)
@@ -154,6 +152,29 @@ def main() -> None:
 
     print(f"Wrote {tflite_out} ({len(tflite_buf) // 1024} KiB)", flush=True)
     print(f"Wrote {labels_out} ({len(class_names)} classes)", flush=True)
+
+
+def _read_or_convert_tflite(sm_path: Path) -> bytes:
+    """Prefer the float32 .tflite that onnx2tf emits directly. Fall back to
+    converting the SavedModel via tf.lite if no .tflite was produced."""
+    direct = sm_path / "model_float32.tflite"
+    if direct.is_file():
+        print(f"Using onnx2tf direct output: {direct.name}", flush=True)
+        return direct.read_bytes()
+
+    # Some onnx2tf versions only emit float16 by default.
+    fp16 = sm_path / "model_float16.tflite"
+    if fp16.is_file():
+        print(f"Using onnx2tf direct output: {fp16.name}", flush=True)
+        return fp16.read_bytes()
+
+    # Fall back to SavedModel -> TFLite. Only reached on older onnx2tf builds.
+    print("Converting SavedModel -> TFLite (fallback)...", flush=True)
+    import tensorflow as tf
+
+    converter = tf.lite.TFLiteConverter.from_saved_model(str(sm_path))
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    return converter.convert()
 
 
 if __name__ == "__main__":
